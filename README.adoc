@@ -1,0 +1,264 @@
+:toc: left
+:sectnums:
+
+= clitools
+
+clitools is a commands.
+
+**Developing now**
+
+== Development
+
+nim -v
+
+  Nim Compiler Version 0.19.6 [Linux: amd64]
+  Compiled at 2019-02-01
+  Copyright (c) 2006-2018 by Andreas Rumpf
+
+  git hash: b6d96cafc8bcad1f3d32f2910b25cd11a93f7751
+  active boot switches: -d:release
+
+
+nimble -v
+
+  nimble v0.9.0 compiled at 2018-10-27 18:10:03
+  git hash: couldn't determine git hash
+
+
+== Usage
+
+=== flat
+
+Flats.
+
+[source,bash]
+----
+$ seq 5 | flat
+1 2 3 4 5
+
+$ seq 5 | flat -n:2
+1 2
+3 4
+5
+
+$ seq 5 | flat -d:,
+1,2,3,4,5
+----
+
+=== rep
+
+Repeat words.
+
+[source,bash]
+----
+$ rep 5 A
+AAAAA
+
+$ echo 'A B' | rep 5 -i
+A BA BA BA BA B
+
+$ rep 1 3 5 A
+A
+AAA
+AAAAA
+
+$ rep $(seq 5) A
+A
+AA
+AAA
+AAAA
+AAAAA
+----
+
+=== balloon
+
+[source,bash]
+----
+$ balloon HELLO
+.---------.
+|         |
+|  HELLO  |
+|         |
+`---------'
+
+$ echo HELLO | balloon
+.---------.
+|         |
+|  HELLO  |
+|         |
+`~~~~~~~~~'
+
+$ echo こんにちは | balloon
+.--------------.
+|              |
+|  こんにちは  |
+|              |
+`~~~~~~~~~~~~~~'
+
+$ echo -e "こんにちは\nHELLO" | balloon
+.--------------.
+|              |
+|  こんにちは  |
+|    HELLO     |
+|              |
+`~~~~~~~~~~~~~~'
+
+$ balloon -b HELLO
+.---------.
+|         |
+|  HELLO  |
+|         |
+`~|/~~~~~~'
+
+$ balloon -t -r -b -l HELLO
+   |\
+ .-' `-----.
+ |         |
+<   HELLO   >
+ |         |
+ `~|/~~~~~~'
+
+$ balloon -t:shout HELLO
+TODO
+----
+
+=== colful
+
+[source,bash]
+----
+$ colful HELLO
+$ echo HELLO | colful
+$ colful -b HELLO
+$ colful -fb HELLO
+$ colful -H HELLO
+$ colful -V HELLO
+$ colful -g:A:1:4
+$ colful -g:0:125 HELLO
+$ colful -g:R:0:125 HELLO
+$ colful -g:G:0:125 HELLO
+$ colful -g:B:0:125 HELLO
+$ colful -p:A
+$ colful -p:255 -c:16
+$ colful -p:RGB --oneline
+----
+
+=== ucut
+
+Unicode cut.
+
+[source,bash]
+----
+$ echo １あ２あ３ | ucut -d あ -f 1,2
+１ ２
+
+$ echo A123B | ucut -d '\d+' -f 1,2
+A B
+----
+
+=== codepoint
+
+Prints code point.
+
+[source,bash]
+----
+% echo あいうえお | codepoint
+char code_point code_point(hex) code_point(short_hex)
+あ 12354 0000000000003042 \U3042
+い 12356 0000000000003044 \U3044
+う 12358 0000000000003046 \U3046
+え 12360 0000000000003048 \U3048
+お 12362 000000000000304A \U304A
+
+% ojichat | codepoint
+char code_point code_point(hex) code_point(short_hex)
+ヤ 12516 00000000000030E4 \U30E4
+ッ 12483 00000000000030C3 \U30C3
+ホ 12507 00000000000030DB \U30DB
+ー 12540 00000000000030FC \U30FC
+😘 128536 000000000001F618 \U1F618
+😍 128525 000000000001F60D \U1F60D
+め 12417 0000000000003081 \U3081
+い 12356 0000000000003044 \U3044
+ち 12385 0000000000003061 \U3061
+ゃ 12419 0000000000003083 \U3083
+ん 12435 0000000000003093 \U3093
+、 12289 0000000000003001 \U3001
+元 20803 0000000000005143 \U5143
+気 27671 0000000000006C17 \U6C17
+か 12363 000000000000304B \U304B
+な 12394 000000000000306A \U306A
+😜 128540 000000000001F61C \U1F61C
+⁉ 8265 0000000000002049 \U2049
+ 65039 000000000000FE0F \UFE0F
+オ 12458 00000000000030AA \U30AA
+レ 12524 00000000000030EC \U30EC
+は 12399 000000000000306F \U306F
+今 20170 0000000000004ECA \U4ECA
+日 26085 00000000000065E5 \U65E5
+か 12363 000000000000304B \U304B
+ら 12425 0000000000003089 \U3089
+香 39321 0000000000009999 \U9999
+川 24029 0000000000005DDD \U5DDD
+へ 12408 0000000000003078 \U3078
+〜 12316 000000000000301C \U301C
+😚 128538 000000000001F61A \U1F61A
+😚 128538 000000000001F61A \U1F61A
+----
+
+=== align
+
+Align texts.
+
+[source,bash]
+----
+% echo $'123\nあいう\nえお' | align right 
+   123
+あいう
+  えお
+
+% echo $'1234\nああああああ\nうえお' | align center -p:=  
+====1234====
+ああああああ
+===うえお===
+----
+
+=== aggr
+
+[source,bash]
+----
+----
+
+== subnet
+
+Subnet mask. Copied from https://github.com/jiro4989/subcal.nim[subcal] repository.
+
+[source,bash]
+----
+$ subnet 100.100.200.1/24
+100.100.200.1	24	01100100011001001100100000000001	11111111111111111111111100000000
+
+$ subnet -Hc 100.100.200.1/24
+IPAddr	CIDR	Bin	Mask
+100.100.200.1	24	01100100011001001100100000000001	11111111111111111111111100000000
+
+$ subnet 0-32.100.200.1/24
+$ subnet -32.100.200.1/24
+$ subnet 64-.100.200.1/24
+$ subnet 128-.100.200.1/24
+$ subnet 100.100.200.0,8,16,24/24
+----
+
+== Install
+
+[source,bash]
+git clone https://github.com/jiro4989/clitools
+cd clitools
+nimble install clitools
+
+or
+
+Download binary from https://github.com/jiro4989/clitools/releases[Releases].
+
+== License
+
+MIT
