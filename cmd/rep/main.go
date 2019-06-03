@@ -56,22 +56,24 @@ var command = &cobra.Command{
 
 		opts := options{delimiter: delimiter, useStdin: useStdin}
 
-		if opts.useStdin {
-			// 標準出力から繰り返す文字を取得
-			sc := bufio.NewScanner(os.Stdin)
-			sc.Scan()
-			if err := sc.Err(); err != nil {
-				panic(err)
-			}
-			word := sc.Text()
-
+		// 標準入力を使う指定がなければ
+		// 引数の最後の文字を繰り返す文字として取得
+		if !opts.useStdin {
+			word := args[len(args)-1]
+			args = args[:len(args)-1]
 			printRepeatedLine(args, word, opts)
 			return
 		}
 
-		// 引数の最後の文字を繰り返す文字として取得
-		word := args[len(args)-1]
-		args = args[:len(args)-1]
+		// 標準入力を使う指定があれば
+		// 標準入力から繰り返す文字を取得
+		sc := bufio.NewScanner(os.Stdin)
+		sc.Scan()
+		if err := sc.Err(); err != nil {
+			panic(err)
+		}
+		word := sc.Text()
+
 		printRepeatedLine(args, word, opts)
 	},
 }
