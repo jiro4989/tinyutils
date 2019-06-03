@@ -10,11 +10,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Config ... main で受け取られる引数、オプション
-type Config struct {
-	Args        []string
-	ColumnCount int
-	Delimiter   string
+// options ... main で受け取られる引数、オプション
+type options struct {
+	columnCount int
+	delimiter   string
 }
 
 const (
@@ -47,11 +46,11 @@ var RootCommand = &cobra.Command{
 			panic(err)
 		}
 
-		config := Config{Args: args, ColumnCount: columnCount, Delimiter: delimiter}
+		config := options{columnCount: columnCount, delimiter: delimiter}
 
 		// 引数がある場合はそれをファイルとして処理
-		if 0 < len(config.Args) {
-			for _, file := range config.Args {
+		if 0 < len(args) {
+			for _, file := range args {
 				func() {
 					f, err := os.Open(file)
 					if err != nil {
@@ -81,7 +80,7 @@ func main() {
 	}
 }
 
-func writeFlat(dst io.Writer, src io.Reader, config Config) error {
+func writeFlat(dst io.Writer, src io.Reader, config options) error {
 	var onelineDatas []string
 	var i int
 	// １行ずつ取得し１行分のデータに追加
@@ -91,8 +90,8 @@ func writeFlat(dst io.Writer, src io.Reader, config Config) error {
 		line := sc.Text()
 		onelineDatas = append(onelineDatas, line)
 		i++
-		if 0 < config.ColumnCount && config.ColumnCount <= i {
-			s := strings.Join(onelineDatas, config.Delimiter)
+		if 0 < config.columnCount && config.columnCount <= i {
+			s := strings.Join(onelineDatas, config.delimiter)
 			fmt.Fprintln(dst, s)
 			onelineDatas = []string{}
 			i = 0
@@ -103,7 +102,7 @@ func writeFlat(dst io.Writer, src io.Reader, config Config) error {
 	}
 	// 最後に残ったデータがあれば追加
 	if 0 < len(onelineDatas) {
-		s := strings.Join(onelineDatas, config.Delimiter)
+		s := strings.Join(onelineDatas, config.delimiter)
 		fmt.Fprintln(dst, s)
 	}
 	return nil

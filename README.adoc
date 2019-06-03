@@ -9,27 +9,14 @@ clitools is a commands.
 
 == Development
 
-nim -v
-
-  Nim Compiler Version 0.19.6 [Linux: amd64]
-  Compiled at 2019-02-01
-  Copyright (c) 2006-2018 by Andreas Rumpf
-
-  git hash: b6d96cafc8bcad1f3d32f2910b25cd11a93f7751
-  active boot switches: -d:release
-
-
-nimble -v
-
-  nimble v0.9.0 compiled at 2018-10-27 18:10:03
-  git hash: couldn't determine git hash
-
+  % go version
+  go version go1.12 linux/amd64
 
 == Usage
 
 === flat
 
-Flats.
+Flats input streams.
 
 [source,bash]
 ----
@@ -47,7 +34,7 @@ $ seq 5 | flat -d:,
 
 === rep
 
-Repeat words.
+Repeat input stream.
 
 [source,bash]
 ----
@@ -68,78 +55,6 @@ AA
 AAA
 AAAA
 AAAAA
-----
-
-=== balloon
-
-[source,bash]
-----
-$ balloon HELLO
-.---------.
-|         |
-|  HELLO  |
-|         |
-`---------'
-
-$ echo HELLO | balloon
-.---------.
-|         |
-|  HELLO  |
-|         |
-`~~~~~~~~~'
-
-$ echo こんにちは | balloon
-.--------------.
-|              |
-|  こんにちは  |
-|              |
-`~~~~~~~~~~~~~~'
-
-$ echo -e "こんにちは\nHELLO" | balloon
-.--------------.
-|              |
-|  こんにちは  |
-|    HELLO     |
-|              |
-`~~~~~~~~~~~~~~'
-
-$ balloon -b HELLO
-.---------.
-|         |
-|  HELLO  |
-|         |
-`~|/~~~~~~'
-
-$ balloon -t -r -b -l HELLO
-   |\
- .-' `-----.
- |         |
-<   HELLO   >
- |         |
- `~|/~~~~~~'
-
-$ balloon -t:shout HELLO
-TODO
-----
-
-=== colful
-
-[source,bash]
-----
-$ colful HELLO
-$ echo HELLO | colful
-$ colful -b HELLO
-$ colful -fb HELLO
-$ colful -H HELLO
-$ colful -V HELLO
-$ colful -g:A:1:4
-$ colful -g:0:125 HELLO
-$ colful -g:R:0:125 HELLO
-$ colful -g:G:0:125 HELLO
-$ colful -g:B:0:125 HELLO
-$ colful -p:A
-$ colful -p:255 -c:16
-$ colful -p:RGB --oneline
 ----
 
 === ucut
@@ -203,23 +118,6 @@ char code_point code_point(hex) code_point(short_hex)
 〜 12316 000000000000301C \U301C
 😚 128538 000000000001F61A \U1F61A
 😚 128538 000000000001F61A \U1F61A
-----
-
-=== align
-
-Align texts.
-
-[source,bash]
-----
-% echo $'123\nあいう\nえお' | align right 
-   123
-あいう
-  えお
-
-% echo $'1234\nああああああ\nうえお' | align center -p:=  
-====1234====
-ああああああ
-===うえお===
 ----
 
 === aggr

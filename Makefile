@@ -12,12 +12,16 @@ EXTERNAL_TOOLS := \
 	github.com/mitchellh/gox \
 	github.com/tcnksm/ghr \
 	github.com/motemen/gobump/cmd/gobump
+BINS := flat rep
 
 help: ## ドキュメントのヘルプを表示する。
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 build: $(SRCS) ## ビルド
-	go build $(LDFLAGS) -o bin/flat ./cmd/flat/main.go
+	for bin in $(BINS); do \
+		go build $(LDFLAGS) -o bin/$$bin ./cmd/$$bin/main.go; \
+		go build $(LDFLAGS) -o bin/$$bin ./cmd/$$bin/main.go; \
+	done
 
 install: build ## インストール
 	go install
