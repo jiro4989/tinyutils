@@ -78,6 +78,7 @@ var command = &cobra.Command{
 	},
 }
 
+// printRepeatedLine は繰り返し文字列の回数だけwordを繰り返して出力する。
 func printRepeatedLine(repeatStrs []string, word string, opts options) {
 	for _, s := range repeatStrs {
 		cnt, err := strconv.Atoi(s)
