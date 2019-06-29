@@ -55,6 +55,12 @@ AA
 AAA
 AAAA
 AAAAA
+
+% rep 5 5 5 5 A -d ,
+A,A,A,A,A
+A,A,A,A,A
+A,A,A,A,A
+A,A,A,A,A
 ----
 
 === ucut
