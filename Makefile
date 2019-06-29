@@ -24,7 +24,7 @@ build: $(SRCS) ## ビルド
 	done
 
 install: build ## インストール
-	go install
+	go install ./cmd/...
 
 xbuild: $(SRCS) bootstrap ## クロスコンパイル
 	gox $(LDFLAGS) $(XBUILD_TARGETS) --output "$(DIST_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}/{{.Dir}}"
