@@ -97,12 +97,6 @@ char code_point code_point(hex)
 お 12362 \U304a
 ----
 
-=== aggr
-
-[source,bash]
-----
-----
-
 == Install
 
 [source,bash]
