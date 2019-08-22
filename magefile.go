@@ -49,23 +49,28 @@ func Xbuild() error {
 func Install() error {
 	mg.Deps(Build)
 	fmt.Println("Installing...")
-	return os.Rename("./MyApp", "/usr/bin/MyApp")
+	return os.Rename("bin/", "/usr/bin/MyApp")
 }
 
 // Clean up after yourself
 func Clean() {
-	fmt.Println("Cleaning...")
-	os.RemoveAll("MyApp")
+	fmt.Print("Cleaning ... ")
+	os.RemoveAll("bin")
+	fmt.Println("OK")
 }
 
 // Clean up after yourself
-func Test() {
-	fmt.Println("Cleaning...")
-	os.RemoveAll("MyApp")
-}
-
-// Clean up after yourself
-func Bootstrap() {
-	fmt.Println("Cleaning...")
-	os.RemoveAll("MyApp")
+func Test() error {
+	fmt.Println("Test...")
+	cmd := exec.Command("go", "test", "-cover", "./...")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+	return nil
 }
