@@ -22,6 +22,14 @@ func Build() error {
 	return cmd.Run()
 }
 
+// A build step that requires additional params, or platform specific steps for example
+func Xbuild() error {
+	mg.Deps(InstallDeps)
+	fmt.Println("Building...")
+	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
+	return cmd.Run()
+}
+
 // A custom install step if you need your bin someplace other than go/bin
 func Install() error {
 	mg.Deps(Build)
@@ -38,6 +46,18 @@ func InstallDeps() error {
 
 // Clean up after yourself
 func Clean() {
+	fmt.Println("Cleaning...")
+	os.RemoveAll("MyApp")
+}
+
+// Clean up after yourself
+func Test() {
+	fmt.Println("Cleaning...")
+	os.RemoveAll("MyApp")
+}
+
+// Clean up after yourself
+func Bootstrap() {
 	fmt.Println("Cleaning...")
 	os.RemoveAll("MyApp")
 }
