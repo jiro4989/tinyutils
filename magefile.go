@@ -5,44 +5,38 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
+	"github.com/jiro4989/magetask/v1"
 	"github.com/magefile/mage/mg" // mg contains helpful utility functions, like Deps
 )
 
 var (
-	defaultBuildFlags = []string{`-ldflags`, `-s -w -extldflags "-static"`}
-	xbuildTarget      = []string{"windows", "linux", "darwin", "386", "amd64"}
-	commands          = []string{"flat", "rep", "ucut", "codepoint"}
+	commands = []string{"flat", "rep", "ucut", "codepoint"}
+	config   = magetask.BuildConfig{}
 )
 
-// Default target to run when none is specified
-// If not set, running mage will list available targets
-// var Default = Build
-
-// A build step that requires additional params, or platform specific steps for example
+// Build はパッケージをビルドして所定のディレクトリ配下に配置する。
 func Build() error {
-	fmt.Println("Building...")
-	os.Setenv("GO111MODULE", "on")
 	for _, cmd := range commands {
-		fmt.Printf("Build %s...\n", cmd)
-		args := []string{"build"}
-		args = append(args, defaultBuildFlags...)
-		args = append(args, "-o", "bin/"+cmd, "./cmd/"+cmd)
-		cmd := exec.Command("go", args...)
-		if err := cmd.Run(); err != nil {
+		fmt.Printf("Building %s ... ", cmd)
+		if err := magetask.Build("bin/"+cmd, "./cmd/"+cmd, config); err != nil {
 			return err
 		}
+		fmt.Println("OK")
 	}
-
 	return nil
 }
 
-// A build step that requires additional params, or platform specific steps for example
+// Xbuild はパッケージをクロスコンパイルして所定のディレクトリ配下に配置する。
 func Xbuild() error {
-	fmt.Println("Building...")
-	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
-	return cmd.Run()
+	for _, cmd := range commands {
+		fmt.Printf("Xbuilding %s ... ", cmd)
+		if err := magetask.Xbuild(cmd, "./cmd/"+cmd, config); err != nil {
+			return err
+		}
+		fmt.Println("OK")
+	}
+	return nil
 }
 
 // A custom install step if you need your bin someplace other than go/bin
@@ -56,21 +50,11 @@ func Install() error {
 func Clean() {
 	fmt.Print("Cleaning ... ")
 	os.RemoveAll("bin")
+	os.RemoveAll("dist")
 	fmt.Println("OK")
 }
 
-// Clean up after yourself
+// Test はテストを実行する。
 func Test() error {
-	fmt.Println("Test...")
-	cmd := exec.Command("go", "test", "-cover", "./...")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-	return nil
+	return magetask.Test()
 }
