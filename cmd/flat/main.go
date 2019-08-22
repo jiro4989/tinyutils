@@ -7,80 +7,70 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
+	"github.com/docopt/docopt-go"
 )
 
-// options ... main で受け取られる引数、オプション
-type options struct {
-	columnCount int
-	delimiter   string
-}
+type (
+	Config struct {
+		Args        []string `docopt:"<args>"`
+		ColumnCount int      `docopt:"--column-count"`
+		Delimiter   string   `docopt:"--delimiter"`
+	}
+)
 
 const (
 	version = `v1.0.0
 Copyright (C) 2019, jiro4989
 Released under the MIT License.
 https://github.com/jiro4989/tinyutils`
+
+	doc = `flat is flatting input stream.
+Usage:
+	flat [options]
+	flat [options] <args>...
+	flat -h | --help
+	flat -v | --version
+
+Options:
+	-h --help                     Show this screen.
+	-v --version                  Show version.
+	-n --column-count=<NUM>       Column count.
+	-d --delimiter=<DELIMITER>    Field delimiter. [default:  ]`
 )
 
-func init() {
-	cobra.OnInitialize()
-	RootCommand.Flags().IntP("columncount", "n", 0, "column count")
-	RootCommand.Flags().StringP("delimiter", "d", " ", "delimiter")
-}
-
-var RootCommand = &cobra.Command{
-	Use:     "flat",
-	Short:   "flat is flatting input stream",
-	Version: version,
-	Run: func(cmd *cobra.Command, args []string) {
-		flags := cmd.Flags()
-
-		columnCount, err := flags.GetInt("columncount")
-		if err != nil {
-			panic(err)
-		}
-
-		delimiter, err := flags.GetString("delimiter")
-		if err != nil {
-			panic(err)
-		}
-
-		config := options{columnCount: columnCount, delimiter: delimiter}
-
-		// 引数がある場合はそれをファイルとして処理
-		if 0 < len(args) {
-			for _, file := range args {
-				func() {
-					f, err := os.Open(file)
-					if err != nil {
-						panic(err)
-					}
-					defer f.Close()
-
-					if err := writeFlat(os.Stdout, f, config); err != nil {
-						panic(err)
-					}
-				}()
-			}
-			return
-		}
-
-		// 引数がない場合は標準入力を受け取る
-		if err := writeFlat(os.Stdout, os.Stdin, config); err != nil {
-			panic(err)
-		}
-	},
-}
-
 func main() {
-	if err := RootCommand.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	parser := &docopt.Parser{}
+	args, _ := parser.ParseArgs(doc, nil, version)
+	config := Config{}
+	err := args.Bind(&config)
+	if err != nil {
+		panic(err)
+	}
+
+	// 引数がある場合はそれをファイルとして処理
+	if 0 < len(config.Args) {
+		for _, file := range config.Args {
+			func() {
+				f, err := os.Open(file)
+				if err != nil {
+					panic(err)
+				}
+				defer f.Close()
+				if err := writeFlat(os.Stdout, f, config); err != nil {
+					panic(err)
+				}
+			}()
+		}
+
+		return
+	}
+	// 引数がない場合は標準入力を受け取る
+	if err := writeFlat(os.Stdout, os.Stdin, config); err != nil {
+		panic(err)
 	}
 }
 
-func writeFlat(dst io.Writer, src io.Reader, config options) error {
+func writeFlat(dst io.Writer, src io.Reader, config Config) error {
 	var onelineDatas []string
 	var i int
 	// １行ずつ取得し１行分のデータに追加
@@ -90,8 +80,8 @@ func writeFlat(dst io.Writer, src io.Reader, config options) error {
 		line := sc.Text()
 		onelineDatas = append(onelineDatas, line)
 		i++
-		if 0 < config.columnCount && config.columnCount <= i {
-			s := strings.Join(onelineDatas, config.delimiter)
+		if 0 < config.ColumnCount && config.ColumnCount <= i {
+			s := strings.Join(onelineDatas, config.Delimiter)
 			fmt.Fprintln(dst, s)
 			onelineDatas = []string{}
 			i = 0
@@ -102,7 +92,7 @@ func writeFlat(dst io.Writer, src io.Reader, config options) error {
 	}
 	// 最後に残ったデータがあれば追加
 	if 0 < len(onelineDatas) {
-		s := strings.Join(onelineDatas, config.delimiter)
+		s := strings.Join(onelineDatas, config.Delimiter)
 		fmt.Fprintln(dst, s)
 	}
 	return nil
