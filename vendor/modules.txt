@@ -2,6 +2,8 @@
 github.com/davecgh/go-spew/spew
 # github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 github.com/docopt/docopt-go
+# github.com/magefile/mage v1.8.0
+github.com/magefile/mage/mg
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/stretchr/testify v1.2.2
