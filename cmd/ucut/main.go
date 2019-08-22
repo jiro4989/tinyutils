@@ -9,118 +9,97 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/spf13/cobra"
+	"github.com/docopt/docopt-go"
 )
 
-// options ... main で受け取られる引数、オプション
-type options struct {
-	delimiter       string
-	outputDelimiter string
-	fields          string
-	outfile         string
-}
+type (
+	Config struct {
+		Files           []string
+		Delimiter       string
+		OutputDelimiter string `docopt:"--output-delimiter"`
+		Fields          string
+		OutFile         string `docopt:"--out-file"`
+	}
+)
 
 const (
 	version = `v1.0.0
 Copyright (C) 2019, jiro4989
 Released under the MIT License.
 https://github.com/jiro4989/tinyutils`
+
+	doc = `ucut cuts word with unicode character.
+
+Usage:
+	ucut [options]
+	ucut [options] <files>...
+	ucut -h | --help
+	ucut -v | --version
+
+Options:
+	-h --help                            Show this screen.
+	-v --version                         Show version.
+	-d --delimiter=<DELIMITER>           Field delimiter. [default:  ]
+	-D --output-delimiter=<DELIMITER>    Output field delimiter. [default:  ]
+	-f --fields=<FIELDS>                 Fields. [default: -]
+	-o --out-file=<OUTFILE>              Out file.`
 )
 
-func init() {
-	cobra.OnInitialize()
-	RootCommand.Flags().StringP("delimiter", "d", " ", "input delimiter")
-	RootCommand.Flags().StringP("output-delimiter", "D", " ", "output delimiter")
-	RootCommand.Flags().StringP("fields", "f", "-", "print fields")
-	RootCommand.Flags().StringP("outfile", "o", "", "out file")
-}
-
-var RootCommand = &cobra.Command{
-	Use:     "ucut",
-	Short:   "ucut cuts word with unicode character",
-	Version: version,
-	Run: func(cmd *cobra.Command, args []string) {
-		flags := cmd.Flags()
-
-		var (
-			opts options
-			err  error
-		)
-
-		opts.delimiter, err = flags.GetString("delimiter")
-		if err != nil {
-			panic(err)
-		}
-
-		opts.outputDelimiter, err = flags.GetString("output-delimiter")
-		if err != nil {
-			panic(err)
-		}
-
-		opts.fields, err = flags.GetString("fields")
-		if err != nil {
-			panic(err)
-		}
-
-		opts.outfile, err = flags.GetString("outfile")
-		if err != nil {
-			panic(err)
-		}
-
-		// 出力先ファイルの指定があればファイルに書き込む
-		// なければ標準出力
-		var outfile *os.File
-		if opts.outfile == "" {
-			outfile = os.Stdout
-		} else {
-			outfile, err = os.OpenFile(opts.outfile, os.O_RDWR, os.ModePerm)
-			if err != nil {
-				panic(err)
-			}
-			defer outfile.Close()
-		}
-
-		// 引数がある場合はそれをファイルとして処理
-		if 0 < len(args) {
-			for _, file := range args {
-				func() {
-					f, err := os.Open(file)
-					if err != nil {
-						panic(err)
-					}
-					defer f.Close()
-
-					if err := ucutIO(outfile, f, opts); err != nil {
-						panic(err)
-					}
-				}()
-			}
-			return
-		}
-
-		// 引数がない場合は標準入力を受け取る
-		if err := ucutIO(outfile, os.Stdin, opts); err != nil {
-			panic(err)
-		}
-	},
-}
-
 func main() {
-	if err := RootCommand.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	parser := &docopt.Parser{}
+	args, _ := parser.ParseArgs(doc, nil, version)
+	config := Config{}
+	err := args.Bind(&config)
+	if err != nil {
+		panic(err)
+	}
+
+	// 出力先ファイルの指定があればファイルに書き込む
+	// なければ標準出力
+	var outfile *os.File
+	if config.OutFile == "" {
+		outfile = os.Stdout
+	} else {
+		outfile, err = os.OpenFile(config.OutFile, os.O_RDWR, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+
+		defer outfile.Close()
+	}
+
+	// 引数がある場合はそれをファイルとして処理
+	if 0 < len(config.Files) {
+		for _, file := range config.Files {
+			func() {
+				f, err := os.Open(file)
+				if err != nil {
+					panic(err)
+				}
+				defer f.Close()
+				if err := ucutIO(outfile, f, config); err != nil {
+					panic(err)
+				}
+			}()
+		}
+
+		return
+	}
+	// 引数がない場合は標準入力を受け取る
+	if err := ucutIO(outfile, os.Stdin, config); err != nil {
+		panic(err)
 	}
 }
 
-func ucutIO(dst io.Writer, src io.Reader, opts options) error {
+func ucutIO(dst io.Writer, src io.Reader, config Config) error {
 	sc := bufio.NewScanner(src)
 	for sc.Scan() {
 		line := sc.Text()
-		fields, err := ucut(line, opts.delimiter, opts.fields)
+		fields, err := ucut(line, config.Delimiter, config.Fields)
 		if err != nil {
 			return err
 		}
-		joined := strings.Join(fields, opts.outputDelimiter)
+		joined := strings.Join(fields, config.OutputDelimiter)
 		fmt.Fprintln(dst, joined)
 	}
 	if err := sc.Err(); err != nil {
