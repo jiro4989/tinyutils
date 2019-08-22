@@ -10,21 +10,36 @@ import (
 	"github.com/magefile/mage/mg" // mg contains helpful utility functions, like Deps
 )
 
+var (
+	defaultBuildFlags = []string{`-ldflags`, `-s -w -extldflags "-static"`}
+	xbuildTarget      = []string{"windows", "linux", "darwin", "386", "amd64"}
+	commands          = []string{"flat", "rep", "ucut", "codepoint"}
+)
+
 // Default target to run when none is specified
 // If not set, running mage will list available targets
 // var Default = Build
 
 // A build step that requires additional params, or platform specific steps for example
 func Build() error {
-	mg.Deps(InstallDeps)
 	fmt.Println("Building...")
-	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
-	return cmd.Run()
+	os.Setenv("GO111MODULE", "on")
+	for _, cmd := range commands {
+		fmt.Printf("Build %s...\n", cmd)
+		args := []string{"build"}
+		args = append(args, defaultBuildFlags...)
+		args = append(args, "-o", "bin/"+cmd, "./cmd/"+cmd)
+		cmd := exec.Command("go", args...)
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // A build step that requires additional params, or platform specific steps for example
 func Xbuild() error {
-	mg.Deps(InstallDeps)
 	fmt.Println("Building...")
 	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
 	return cmd.Run()
@@ -35,13 +50,6 @@ func Install() error {
 	mg.Deps(Build)
 	fmt.Println("Installing...")
 	return os.Rename("./MyApp", "/usr/bin/MyApp")
-}
-
-// Manage your deps, or running package managers.
-func InstallDeps() error {
-	fmt.Println("Installing Deps...")
-	cmd := exec.Command("go", "get", "github.com/stretchr/piglatin")
-	return cmd.Run()
 }
 
 // Clean up after yourself
