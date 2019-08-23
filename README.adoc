@@ -12,6 +12,26 @@ tinyutils are minimum commands.
   % go version
   go version go1.12 linux/amd64
 
+I use [mage](https://github.com/magefile/mage) for building tools.
+Please you run below script to install mage.
+
+[source,bash]
+----
+./setup.sh
+----
+
+=== build tasks
+
+Tasks are there.
+
+[source,bash]
+----
+mage build
+mage xbuild
+mage install
+mage test
+----
+
 == Usage
 
 === flat
