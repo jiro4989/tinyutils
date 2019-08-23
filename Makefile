@@ -1,10 +1,10 @@
 VERSION := 1.0.0
-SRCS := $(shell find . -name "*.go" -type f )
 LDFLAGS := -ldflags="-s -w \
 	-extldflags \"-static\""
 XBUILD_TARGETS := \
 	-os="windows linux darwin" \
 	-arch="386 amd64" 
+CMDS := flat rep ucut codepoint
 DIST_DIR := dist
 README := README.*
 EXTERNAL_TOOLS := \
@@ -15,8 +15,8 @@ help: ## ドキュメントのヘルプを表示する。
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: build
-build: $(SRCS) ## ビルド
-	for cmd in flat rep ucut codepoint; do \
+build: ## ビルド
+	for cmd in $(CMDS); do \
 		go build $(LDFLAGS) -o bin/$$cmd ./cmd/$$cmd; \
 	done
 
@@ -25,7 +25,7 @@ install: build ## インストール
 	go install
 
 .PHONY: xbuild
-xbuild: $(SRCS) bootstrap ## クロスコンパイル
+xbuild: bootstrap ## クロスコンパイル
 	gox $(LDFLAGS) $(XBUILD_TARGETS) --output "$(DIST_DIR)/{{.Dir}}$(VERSION)_{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 .PHONY: archive
@@ -60,10 +60,3 @@ bootstrap: ## 外部ツールをインストールする
 		GO111MODULE=off go get $$t ; \
 	done
 
-.PHONY: docker-build
-docker-build:
-	docker build -t jiro4989/textimg .
-
-.PHONY: docker-push
-docker-push:
-	docker push jiro4989/textimg
